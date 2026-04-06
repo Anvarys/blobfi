@@ -18,6 +18,10 @@ To use this project first you need to print the top and bottom parts ([link to t
 
 And then you need to flash the ESP32 using my [firmware](https://github.com/Anvarys/blobfi/tree/master/firmware) via [PlatformIO](https://platformio.org/)
 
+## Tools I used
+
+For PCB & schematic design I used [KiCAD](https://kicad.org), for 3D design I used [Autodesk Fusion](https://www.autodesk.com/products/fusion-360/overview) (free version), for coding the firmware I used [VS Code](https://code.visualstudio.com/) with [PlatformIO](https://platformio.org/) plugin, for testing the firmware I used [Wowki](https://wokwi.com/) hardware simulator and for general design (Edge.Cuts & the Zine) I used [Figma](https://figma.com)
+
 ## PCB design
 
 ![pcb](https://github.com/Anvarys/blobfi/blob/master/images/pcb.png?raw=true)
@@ -38,8 +42,6 @@ Blobfi has 3 stats which decrease by 1 each 5 minutes:
 - Energy (can be increased by 10 if you put Blobfi to sleep by pressing the right button)
 
 Depending on these stats you will have a different image of a blobfish on your main screen, here is an example of a happy Blobfi:
-
-_This was done using Wowki simulator_
 
 ![main_screen](https://github.com/Anvarys/blobfi/blob/master/images/main_screen.png?raw=true)
 
