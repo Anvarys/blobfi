@@ -64,3 +64,6 @@ And here is an example of an action animation (duration - 5s):
 |XIAO-ESP32-C6           |1  |US$5.20    |https://www.seeedstudio.com/Seeed-Studio-XIAO-ESP32C6-p-5884.html|                                   |
 |Seeed Studio shipping   |1  |US$5.44    |-                                                                |                                   |
 |Total                   |   |US$35.98   |                                                                 |                                   |
+## My zine for this project
+
+![Zine](https://github.com/Anvarys/blobfi/blob/master/images/zine.png?raw=true)
