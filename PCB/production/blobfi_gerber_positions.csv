@@ -1,0 +1,10 @@
+﻿Designator,Mid X,Mid Y,Rotation,Layer
+BT1,149.995,-63.5,270.0,bottom
+BUZZER1,150.0,-82.5,0.0,bottom
+GND,156.5,-94.5,0.0,bottom
+SW1,164.5,-105.0,0.0,top
+SW2,150.1,-106.0,0.0,top
+SW3,136.0,-105.0,0.0,top
+U1,150.12,-107.38,270.0,bottom
+U2,150.0,-82.3775,0.0,top
+VBAT,143.5,-94.5,0.0,bottom
