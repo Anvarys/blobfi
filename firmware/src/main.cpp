@@ -12,8 +12,6 @@
 #define BTN_RIGHT 2
 #define BUZZER 18
 
-#define CHANNEL 0
-
 const unsigned char PROGMEM NEUTRAL_BLOBFI[] = {
   0b00000000, 0b00000000, 0b00000000, 0b00000000,
   0b00000000, 0b00000001, 0b10000000, 0b00000000,
@@ -111,7 +109,7 @@ void setup() {
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_MIDDLE, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
-  ledcSetup(CHANNEL, 0, 8);
+  pinMode(BUZZER, OUTPUT);
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
@@ -128,23 +126,47 @@ void setup() {
 unsigned long lastButtonPress = 0;
 
 void handleButtons() {
-  if (millis() - lastButtonPress < 200) return;
+  if (currentScreen != SCREEN_MAIN || millis() - lastButtonPress < 200) return;
 
   if (digitalRead(BTN_LEFT) == LOW) {
     currentScreen = SCREEN_FEED;
     pet.hunger += 10;
-    ledcWriteTone(CHANNEL, 1000);
+    if (pet.hunger > 100) {
+      pet.hunger = 100;
+    }
+    tone(BUZZER, 1000, 300);
+
+    lastScreenChange = millis();
   }
   else if (digitalRead(BTN_MIDDLE) == LOW) {
     currentScreen = SCREEN_PLAY;
     pet.happiness += 10;
-    ledcWriteTone(CHANNEL, 1200);
+    if (pet.happiness > 100) {
+      pet.happiness = 100;
+    }
+    tone(BUZZER, 1200, 300);
+
+    lastScreenChange = millis();
   }
   else if (digitalRead(BTN_RIGHT) == LOW) {
     currentScreen = SCREEN_SLEEP;
     pet.energy += 10;
-    ledcWriteTone(CHANNEL, 700);
+    if (pet.energy > 100) {
+      pet.energy = 100;
+    }
+    tone(BUZZER, 700, 300);
+
+    lastScreenChange = millis();
   }
+}
+
+void drawBar(int x, int y, int value) {
+  int width = 50;
+  int height = 6;
+
+  int fillWidth = map(value, 0, 100, 0, width);
+  display.drawRect(x, y, width, height, SSD1306_WHITE);
+  display.fillRect(x, y, fillWidth, height, SSD1306_WHITE);
 }
 
 void render() {
@@ -156,23 +178,23 @@ void render() {
   {
   case SCREEN_FEED:
     display.clearDisplay();
-    display.setCursor(WIDTH/2-20,HEIGHT/2-8);
+    display.setCursor(0,HEIGHT/2-4);
     display.print("Feeding blobfi");
     break;
 
   case SCREEN_PLAY:
     display.clearDisplay();
-    display.setCursor(WIDTH/2-20,HEIGHT/2-8);
-    display.print("Playing with blobfi");
+    display.setCursor(0,HEIGHT/2-4);
+    display.print("Blobfi is playing");
     break;
 
   case SCREEN_SLEEP:
     display.clearDisplay();
-    display.setCursor(WIDTH/2-20,HEIGHT/2-8);
+    display.setCursor(0,HEIGHT/2-4);
     display.print("Blobfi is sleeping");
     break;
   
-  default:
+  case SCREEN_MAIN:
     const unsigned char* sprite;
     if (pet.hunger < 30 || pet.happiness < 30 || pet.energy < 30) {
       sprite = SAD_BLOBFI;
@@ -181,8 +203,9 @@ void render() {
     } else {
       sprite = NEUTRAL_BLOBFI;
     }
+    display.clearDisplay();
 
-    display.drawBitmap(64, 10, sprite, 22, 22, SSD1306_WHITE);
+    display.drawBitmap(78, 10, sprite, 32, 22, SSD1306_WHITE);
 
     display.setTextSize(1);
 
@@ -196,11 +219,10 @@ void render() {
 
     display.setCursor(0, 36);
     display.print("Energy");
-    drawBar(0, 45, pet.hunger);
+    drawBar(0, 45, pet.energy);
 
     display.setCursor(0, 56);
     display.print("[Feed] [Play] [Sleep]");
-
     break;
   }
 
@@ -208,22 +230,9 @@ void render() {
     for (int i = 0; i < (millis()/200)%4; i++) {
       display.print(".");
     }
-
-    if (millis() - lastScreenChange > 500) {
-      ledcWriteTone(CHANNEL, 0);
-    }
   } 
 
   display.display();
-}
-
-void drawBar(int x, int y, int value) {
-  int width = 50;
-  int height = 6;
-
-  int fillWidth = map(value, 0, 100, 0, width);
-  display.drawRect(x, y, width, height, SSD1306_WHITE);
-  display.fillRect(x, y, fillWidth, height, SSD1306_WHITE);
 }
 
 unsigned long lastUpdate = 0;
@@ -249,3 +258,4 @@ void loop() {
   render();
   delay(100);
 }
+
