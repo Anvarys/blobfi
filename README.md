@@ -11,7 +11,9 @@ A custom PCB-based Tamagotchi virtual pet called Blobfi
 
 A custom PCB-based Tamagotchi-like virtual pet built the XIAO-ESP32-C6 MCU, featuring a 0.96" OLED display, 500mah battery with USB-C charging (via the esp32), 3 buttons and a buzzer.
 
-I made this project to have my own custom tamagotchi pet called Blobfi, which is a blobfish. I used [Tanishq's tamagotchi](https://github.com/TaniWanKenobi/tamagotchi/) as insiration & reference.
+I made this project to have my own custom tamagotchi pet called Blobfi, which is a blobfish, because I love blobfishes!!
+
+I used [Tanishq's tamagotchi](https://github.com/TaniWanKenobi/tamagotchi/) as insiration & reference.
 
 To use this project first you need to print the top and bottom parts ([link to the folder with 3d models](https://github.com/Anvarys/blobfi/tree/master/CAD)), then you need to buy all the [parts](https://github.com/Anvarys/blobfi/blob/master/BOM.csv) and the [PCB](https://github.com/Anvarys/blobfi/blob/master/blobfi_gerber.zip) and then assemple it all together as shown on the picture below (also you need to screw the PCB and the top to the bottom enclosure in using 3 M3x8mm screws each):
 ![](https://github.com/Anvarys/blobfi/blob/master/images/assembly.png?raw=true)
