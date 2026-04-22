@@ -1,3 +1,9 @@
+<div style="padding:5px; border-left:5px solid red; background:#ff000030;">
+
+  <strong>Warning:</strong> This project is currently in developement, so some of the design is out of date
+
+</div>
+
 <div align="center">
   <img src="https://github.com/Anvarys/blobfi/blob/master/images/front.png?raw=true" alt="Blobfi" width="300">
 </div>
@@ -71,3 +77,7 @@ And here is an example of an action animation (duration - 5s):
 ## My zine for this project
 
 ![Zine](https://github.com/Anvarys/blobfi/blob/master/images/zine.png?raw=true)
+
+#### For fallout reviewers
+
+Currently I'm working on the project so if you are reviewing it right now then please return it or postpone the review until early May
