@@ -2,15 +2,18 @@
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 #define WIDTH 128
 #define HEIGHT 64
 #define OLED_RESET -1
 
-#define BTN_LEFT GPIO_NUM_0
-#define BTN_MIDDLE GPIO_NUM_1
-#define BTN_RIGHT GPIO_NUM_2
-#define BUZZER GPIO_NUM_18
+#define BTN_LEFT D0
+#define BTN_MIDDLE D1
+#define BTN_RIGHT D2
+#define VIBRATION_MOTOR D10
+#define TEMP_SENSOR D3
 
 #define BTN_LEFT_PIN_BITMASK (1ULL << GPIO_NUM_0)
 #define BTN_MIDDLE_PIN_BITMASK (1ULL << GPIO_NUM_1)
@@ -22,6 +25,9 @@
 #define SLEEP_AFTER_INACTIVE_FOR_S 32
 
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, OLED_RESET);
+
+OneWire oneWire(TEMP_SENSOR);
+DallasTemperature sensors(&oneWire);
 
 const unsigned char PROGMEM NEUTRAL_BLOBFI[] = {
   0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -107,19 +113,33 @@ struct Pet {
 
 RTC_DATA_ATTR Pet pet = {80, 80, 80, 0};
 
-RTC_DATA_ATTR uint64_t last_boot_time = 0;
-RTC_DATA_ATTR uint64_t lastUpdate = 0;
+RTC_DATA_ATTR uint64_t lastUpdate = -1; // uS
+
+uint64_t lastUpdateBootRelative = 0; // uS
+
+suseconds_t getRtcTime() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_usec;
+}
+
+float getTempC() {
+  sensors.requestTemperatures(); 
+  return sensors.getTempCByIndex(0);
+}
 
 void setup() {
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_MIDDLE, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
-  pinMode(BUZZER, OUTPUT);
+  pinMode(VIBRATION_MOTOR, OUTPUT);
 
   uint64_t mask = BTN_LEFT_PIN_BITMASK | BTN_MIDDLE_PIN_BITMASK | BTN_RIGHT_PIN_BITMASK;
   esp_deep_sleep_enable_gpio_wakeup(mask, ESP_GPIO_WAKEUP_GPIO_HIGH);
 
   esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS);
+
+  sensors.begin();
 
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
     updatePet();
@@ -127,12 +147,16 @@ void setup() {
     return;
   }
 
+  if (lastUpdate == -1) {
+    lastUpdate = getRtcTime();
+  }
+
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
   display.display();
 }
 
-uint64_t lastButtonPress = 0;
+uint64_t lastButtonPress = -200;
 
 enum Screen {
   SCREEN_MAIN, SCREEN_FEED, SCREEN_PLAY, SCREEN_SLEEP
@@ -146,31 +170,30 @@ void handleButtons() {
 
   if (digitalRead(BTN_LEFT) == LOW) {
     currentScreen = SCREEN_FEED;
-    pet.hunger += 10;
+    pet.hunger += 15;
+    pet.energy += 5;
     if (pet.hunger > 100) {
       pet.hunger = 100;
     }
-    tone(BUZZER, 1000, 300);
 
     lastScreenChange = millis();
   }
   else if (digitalRead(BTN_MIDDLE) == LOW) {
     currentScreen = SCREEN_PLAY;
-    pet.happiness += 10;
+    pet.happiness += 15;
+    pet.energy -= 5;
     if (pet.happiness > 100) {
       pet.happiness = 100;
     }
-    tone(BUZZER, 1200, 300);
 
     lastScreenChange = millis();
   }
   else if (digitalRead(BTN_RIGHT) == LOW) {
     currentScreen = SCREEN_SLEEP;
-    pet.energy += 10;
+    pet.energy += 15;
     if (pet.energy > 100) {
       pet.energy = 100;
     }
-    tone(BUZZER, 700, 300);
 
     lastScreenChange = millis();
   }
@@ -256,6 +279,8 @@ void handleSleeping() {
     display.clearDisplay();
     display.display();
     display.ssd1306_command(SSD1306_DISPLAYOFF);
+
+    esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS - (getRtcTime() - lastUpdate));
     esp_deep_sleep_start();
   }
 }
@@ -266,9 +291,30 @@ void updatePet() {
   pet.happiness--;
   pet.hunger--;
 
+  if (getTempC() > 40 || getTempC() < 5) {
+    pet.happiness--;
+  }
+
   if (pet.energy < 0) {pet.energy = 0;}
   if (pet.happiness < 0) {pet.happiness = 0;}
   if (pet.hunger < 0) {pet.hunger = 0;}
+
+  if (pet.energy == 0 || pet.happiness == 0 || pet.hunger == 0) {
+    for (int i = 0; i < 5) {
+      digitalWrite(VIBRATION_MOTOR, HIGH);
+      delay(200);
+      digitalWrite(VIBRATION_MOTOR, LOW);
+      delay(80);
+    }
+  }
+
+  lastUpdate = getRtcTime();
+}
+
+void handleAwakeUpdating() {
+  if (getRtcTime() - lastUpdateBootRelative > UPDATE_DELAY_IN_S * 1000) {
+    updatePet();
+  }
 }
 
 void loop() {
