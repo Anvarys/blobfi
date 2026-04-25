@@ -46,6 +46,8 @@ Blobfi has 3 stats which decrease by 1 each 5 minutes:
 - Happiness
 - Energy
 
+And if the temperature of Blobfi goes above 40C or below 5C happiness will decrease at 2x rate.
+
 Depending on these stats you will have a different image of a blobfish on your main screen, here is an example of a happy Blobfi:
 
 ![main_screen](https://github.com/Anvarys/blobfi/blob/master/images/main_screen.png?raw=true)
