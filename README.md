@@ -1,6 +1,3 @@
-> [!WARNING]
-> This project is currently in developement, so some of the design is out of date
-
 <div align="center">
   <img src="https://github.com/Anvarys/blobfi/blob/master/images/top-view.png?raw=true" alt="Blobfi" width="300">
 </div>
@@ -12,7 +9,7 @@ A custom PCB-based Tamagotchi virtual pet called Blobfi
 
 ## About the project
 
-A custom PCB-based Tamagotchi-like virtual pet built the XIAO-ESP32-C6 MCU, featuring a 0.96" OLED display, 500mah battery with USB-C charging (via the esp32), 3 buttons, a temperature sensor and a vibrational motor.
+A custom PCB-based Tamagotchi-like virtual pet built the XIAO-ESP32-C6 MCU, featuring a 0.96" OLED display, 500mah battery with USB-C charging (via the esp32), 3 buttons, a temperature sensor and a vibration motor.
 
 I made this project to have my own custom tamagotchi pet called Blobfi, which is a blobfish, because I love blobfishes!!
 
@@ -52,7 +49,7 @@ Depending on these stats you will have a different image of a blobfish on your m
 
 ![main_screen](https://github.com/Anvarys/blobfi/blob/master/images/main_screen.png?raw=true)
 
-If any of the stats will go below 0 it will be set to 0 and the vibrational motor will shake your Blobfi as it wants to eat/sleep/play.
+If any of the stats will go below 0 it will be set to 0 and the vibration motor will shake your Blobfi as it wants to eat/sleep/play.
 
 Also if any stat is below 10 then the bar will blink on the screen.
 
@@ -102,7 +99,3 @@ This allows to reduce ESP32C6 and display's total current from about **50mA** to
 ## My zine for this project
 
 ![Zine](https://github.com/Anvarys/blobfi/blob/master/images/zine.png?raw=true)
-
-#### For fallout reviewers
-
-Currently I'm working on the project so if you are reviewing it right now then please return it or postpone the review until early May
