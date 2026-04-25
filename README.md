@@ -2,7 +2,7 @@
 > This project is currently in developement, so some of the design is out of date
 
 <div align="center">
-  <img src="https://github.com/Anvarys/blobfi/blob/master/images/front.png?raw=true" alt="Blobfi" width="300">
+  <img src="https://github.com/Anvarys/blobfi/blob/master/images/top-view.png?raw=true" alt="Blobfi" width="300">
 </div>
 
 <h2 align="center">Blobfi</h2>
