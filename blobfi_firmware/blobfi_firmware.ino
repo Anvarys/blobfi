@@ -2,8 +2,7 @@
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
+#include <DS18B20.h>
 
 #define WIDTH 128
 #define HEIGHT 64
@@ -22,12 +21,11 @@
 #define UPDATE_DELAY_IN_S 300
 #define UPDATE_DELAY_IN_uS UPDATE_DELAY_IN_S * 100000ULL
 
-#define SLEEP_AFTER_INACTIVE_FOR_S 32
+#define SLEEP_AFTER_INACTIVE_FOR_S 30
 
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, OLED_RESET);
 
-OneWire oneWire(TEMP_SENSOR);
-DallasTemperature sensors(&oneWire);
+DS18B20 ds18b20(TEMP_SENSOR);
 
 const unsigned char PROGMEM NEUTRAL_BLOBFI[] = {
   0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -124,8 +122,7 @@ suseconds_t getRtcTime() {
 }
 
 float getTempC() {
-  sensors.requestTemperatures(); 
-  return sensors.getTempCByIndex(0);
+  return ds18b20.getTempC() / 16.0;
 }
 
 void setup() {
@@ -138,8 +135,6 @@ void setup() {
   esp_deep_sleep_enable_gpio_wakeup(mask, ESP_GPIO_WAKEUP_GPIO_HIGH);
 
   esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS);
-
-  sensors.begin();
 
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
     updatePet();
@@ -165,8 +160,24 @@ enum Screen {
 Screen currentScreen = SCREEN_MAIN;
 uint64_t lastScreenChange = 0;
 
+void goSleep() {
+  display.clearDisplay();
+  display.display();
+
+  display.ssd1306_command(SSD1306_DISPLAYOFF);
+  display.ssd1306_command(0x8D);
+  display.ssd1306_command(0x10);
+
+  esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS - (getRtcTime() - lastUpdate));
+  esp_deep_sleep_start();
+}
+
 void handleButtons() {
-  if (currentScreen != SCREEN_MAIN || millis() - lastButtonPress < 200) return;
+  if (currentScreen != SCREEN_MAIN || millis() - lastButtonPress < 150) return;
+
+  if (digitalRead(BTN_LEFT) == LOW && digitalRead(BTN_RIGHT) == LOW) {
+    goSleep();
+  }
 
   if (digitalRead(BTN_LEFT) == LOW) {
     currentScreen = SCREEN_FEED;
@@ -200,6 +211,8 @@ void handleButtons() {
 }
 
 void drawBar(int x, int y, int value) {
+  if (value < 10 && (millis()/500)%2 == 0) {return;}
+
   int width = 50;
   int height = 6;
 
@@ -209,7 +222,7 @@ void drawBar(int x, int y, int value) {
 }
 
 void render() {
-  if (currentScreen != SCREEN_MAIN && millis() - lastScreenChange > 5000) {
+  if (currentScreen != SCREEN_MAIN && millis() - lastScreenChange > 3000) {
     currentScreen = SCREEN_MAIN;
   }
 
@@ -276,12 +289,7 @@ void render() {
 
 void handleSleeping() {
   if (millis() - lastButtonPress > SLEEP_AFTER_INACTIVE_FOR_S * 1000) {
-    display.clearDisplay();
-    display.display();
-    display.ssd1306_command(SSD1306_DISPLAYOFF);
-
-    esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS - (getRtcTime() - lastUpdate));
-    esp_deep_sleep_start();
+    goSleep();
   }
 }
 
@@ -300,7 +308,7 @@ void updatePet() {
   if (pet.hunger < 0) {pet.hunger = 0;}
 
   if (pet.energy == 0 || pet.happiness == 0 || pet.hunger == 0) {
-    for (int i = 0; i < 5) {
+    for (int i = 0; i < 5; i++) {
       digitalWrite(VIBRATION_MOTOR, HIGH);
       delay(200);
       digitalWrite(VIBRATION_MOTOR, LOW);
