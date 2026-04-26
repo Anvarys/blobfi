@@ -18,11 +18,11 @@ I used [Tanishq's tamagotchi](https://github.com/TaniWanKenobi/tamagotchi/) as i
 To use this project first you need to 3d print the top and bottom parts ([link to the folder with 3d models](https://github.com/Anvarys/blobfi/tree/master/CAD)), then you need to buy all the [parts](https://github.com/Anvarys/blobfi/blob/master/BOM.csv) and the [PCB](https://github.com/Anvarys/blobfi/blob/master/blobfi_gerber.zip) and then assemple it all together as shown on the picture below (also you need to screw the PCB and the top to the bottom enclosure in using 3 M3x8mm screws each):
 ![](https://github.com/Anvarys/blobfi/blob/master/images/assembly.png?raw=true)
 
-And then you need to flash the ESP32 using my [blobfi_firmware](https://github.com/Anvarys/blobfi/tree/master/blobfi_firmware) sketch in Arduino IDE, also you need to install Adafruit SSD1306 library first.
+And then you need to flash the ESP32 using my [blobfi_firmware](https://github.com/Anvarys/blobfi/tree/master/blobfi_firmware) sketch in Arduino IDE, also you need to install Adafruit SSD1306, OneWireNg, DallasTemperature libraries with their dependencies.
 
 ## Tools I used
 
-For PCB & schematic design I used [KiCAD](https://kicad.org), for 3D design I used [Autodesk Fusion](https://www.autodesk.com/products/fusion-360/overview) (free version), for coding the firmware I used [VS Code](https://code.visualstudio.com/) with [PlatformIO](https://platformio.org/) plugin, for testing the firmware I used [Wowki](https://wokwi.com/) hardware simulator and for general design (Edge.Cuts & the Zine) I used [Figma](https://figma.com)
+For PCB & schematic design I used [KiCAD](https://kicad.org), for 3D design I used [Autodesk Fusion](https://www.autodesk.com/products/fusion-360/overview) (free version), for coding the firmware I used [Arduino IDE](https://www.arduino.cc/en/software/), for testing the firmware I used [Wowki](https://wokwi.com/) hardware simulator and for general design (Edge.Cuts & the Zine) I used [Figma](https://figma.com)
 
 ## PCB design
 
@@ -95,7 +95,7 @@ This allows to reduce ESP32C6 and display's total current from about **50mA** to
 |                        |             |                                                                            |
 |Total                   |US$41.40     |                                                                            |
 
-
+The display is out of stock so the price is for buying one from "Other suppliers" on LCSC
 
 
 ## My zine for this project
