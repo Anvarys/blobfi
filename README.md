@@ -91,7 +91,7 @@ This allows to reduce ESP32C6 and display's total current from about **50mA** to
 |2N2222A transistor      |1  |US$0.91      |https://www.lcsc.com/product-detail/C5330385.html                           |                                                                                             |
 |0.1uF capacitor         |1  |US$0.61      |https://www.lcsc.com/product-detail/C5632427.html                           |                                                                                             |
 |LCSC shipping & handling|1  |US$12.14     |-                                                                           |                                                                                             |
-|3D printed parts        |2  |US$0.00      |Self printed                                                                |                                                                                             |
+|3D printed parts        |2  |US$0.00      |i will print myself                                                                |                                                                                             |
 |                        |   |             |                                                                            |                                                                                             |
 |Total                   |   |US$41.40     |                                                                            |                                                                                             |
 
