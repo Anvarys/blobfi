@@ -2,17 +2,19 @@
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
-#include <DS18B20.h>
+#include <OneWireNg_CurrentPlatform.h>
+#include <DallasTemperature.h>
+
 
 #define WIDTH 128
 #define HEIGHT 64
 #define OLED_RESET -1
 
-#define BTN_LEFT D0
-#define BTN_MIDDLE D1
-#define BTN_RIGHT D2
-#define VIBRATION_MOTOR D10
-#define TEMP_SENSOR D3
+#define BTN_LEFT 0
+#define BTN_MIDDLE 1
+#define BTN_RIGHT 2
+#define VIBRATION_MOTOR 10
+#define TEMP_SENSOR 3
 
 #define BTN_LEFT_PIN_BITMASK (1ULL << GPIO_NUM_0)
 #define BTN_MIDDLE_PIN_BITMASK (1ULL << GPIO_NUM_1)
@@ -25,7 +27,8 @@
 
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, OLED_RESET);
 
-DS18B20 ds18b20(TEMP_SENSOR);
+OneWireNg_CurrentPlatform ow(TEMP_SENSOR, false);
+DallasTemperature sensors((OneWire*)&ow);
 
 const unsigned char PROGMEM NEUTRAL_BLOBFI[] = {
   0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -122,7 +125,10 @@ suseconds_t getRtcTime() {
 }
 
 float getTempC() {
-  return ds18b20.getTempC() / 16.0;
+  sensors.requestTemperatures();
+  delay(110);
+
+  return sensors.getTempCByIndex(0);
 }
 
 void setup() {
@@ -135,6 +141,8 @@ void setup() {
   esp_deep_sleep_enable_gpio_wakeup(mask, ESP_GPIO_WAKEUP_GPIO_HIGH);
 
   esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS);
+  sensors.begin();
+  sensors.setResolution(9);
 
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
     updatePet();
