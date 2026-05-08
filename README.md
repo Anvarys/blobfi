@@ -75,25 +75,25 @@ This allows to reduce ESP32C6 and display's total current from about **50mA** to
 
 |Name                    |Price (Total)|Link                                                                        |
 |------------------------|-------------|----------------------------------------------------------------------------|
-|Lithium battery 500mah  |US$8.48      |https://fr.aliexpress.com/item/1005009540712263.html                        |
-|XIAO ESP32 C6           |US$6.68      |https://fr.aliexpress.com/item/1005006987272421.html                        |
-|Aliexpress shipping     |US$5.07      |-                                                                           |
+|Lithium battery 500mah  |US$6.73      |https://fr.aliexpress.com/item/1005009540712263.html                        |
+|XIAO ESP32 C6           |US$6.71      |https://fr.aliexpress.com/item/1005006987272421.html                        |
+|Aliexpress shipping     |US$5.10      |-                                                                           |
 |JLCPCB PCB              |US$2.00      |https://jlcpcb.com                                                          |
 |M3 8mm screws           |US$0.06      |https://jlcmc.com/product/s/E02/EDLF/din-7984-hex-socket-thin-head-cap-screw|
 |JLCPCB shipping         |US$8.36      |-                                                                           |
-|JLCPCB New user coupon  |- US$10.00    |-                                                                           |
+|JLCPCB New user coupon  |-US$10.00    |-                                                                           |
 |4K7 Resistor            |US$0.58      |https://www.lcsc.com/product-detail/C119339.html                            |
 |MY18B20L temp sensor    |US$1.94      |https://www.lcsc.com/product-detail/C5259249.html                           |
-|0.96'' OLED display     |US$2.92      |https://www.lcsc.com/product-detail/C5248080.html                           |
-|Tactile button          |US$0.51      |https://www.lcsc.com/product-detail/C2888493.html                           |
+|0.96'' OLED display     |US$2.25      |https://www.lcsc.com/product-detail/C5248080.html                           |
+|Tactile button          |US$0.54      |https://www.lcsc.com/product-detail/C2888493.html                           |
 |Vibration motor         |US$0.52      |https://www.lcsc.com/product-detail/C2759982.html                           |
-|Male pin headers (20pcs)|US$0.62      |https://www.lcsc.com/product-detail/C49261205.html                          |
-|2N2222A transistor      |US$0.91      |https://www.lcsc.com/product-detail/C5330385.html                           |
+|Male pin headers (20pcs)|US$0.60      |https://www.lcsc.com/product-detail/C49261205.html                          |
+|2N2222A transistor      |US$0.90      |https://www.lcsc.com/product-detail/C5330385.html                           |
 |0.1uF capacitor         |US$0.61      |https://www.lcsc.com/product-detail/C5632427.html                           |
-|LCSC shipping & handling|US$12.14     |-                                                                           |
-|3D printed parts        |US$0.00      |i will print myself                                                         |
+|LCSC shipping & handling|US$12.57     |-                                                                           |
 |                        |             |                                                                            |
-|Total                   |US$41.40     |                                                                            |
+|Total                   |US$39.47     |                                                                            |
+                                                                     |
 
 The display is out of stock so the price is for buying one from "Other suppliers" on LCSC
 
