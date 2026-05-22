@@ -21,14 +21,14 @@
 #define BTN_RIGHT_PIN_BITMASK (1ULL << GPIO_NUM_2)
 
 #define UPDATE_DELAY_IN_S 300
-#define UPDATE_DELAY_IN_uS UPDATE_DELAY_IN_S * 100000ULL
+#define UPDATE_DELAY_IN_uS (UPDATE_DELAY_IN_S * 1000000ULL)
 
 #define SLEEP_AFTER_INACTIVE_FOR_S 30
 
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, OLED_RESET);
 
-OneWireNg_CurrentPlatform ow(TEMP_SENSOR, false);
-DallasTemperature sensors((OneWire*)&ow);
+/*OneWireNg_CurrentPlatform ow(TEMP_SENSOR, false);
+DallasTemperature sensors((OneWire*)&ow);*/
 
 const unsigned char PROGMEM NEUTRAL_BLOBFI[] = {
   0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -125,30 +125,37 @@ suseconds_t getRtcTime() {
 }
 
 float getTempC() {
-  sensors.requestTemperatures();
+  /*sensors.requestTemperatures();
   delay(110);
 
-  return sensors.getTempCByIndex(0);
+  return sensors.getTempCByIndex(0);*/
+
+  return 20;
 }
+
+uint64_t lastButtonPress = 0;
 
 void setup() {
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_MIDDLE, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
   pinMode(VIBRATION_MOTOR, OUTPUT);
+  Serial.begin(115200);
 
   uint64_t mask = BTN_LEFT_PIN_BITMASK | BTN_MIDDLE_PIN_BITMASK | BTN_RIGHT_PIN_BITMASK;
-  esp_deep_sleep_enable_gpio_wakeup(mask, ESP_GPIO_WAKEUP_GPIO_HIGH);
+  esp_deep_sleep_enable_gpio_wakeup(mask, ESP_GPIO_WAKEUP_GPIO_LOW);
 
   esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS);
-  sensors.begin();
-  sensors.setResolution(9);
+  /*sensors.begin();
+  sensors.setResolution(9);*/
 
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
     updatePet();
     esp_deep_sleep_start();
     return;
   }
+
+  Serial.println("setup passed");
 
   if (lastUpdate == -1) {
     lastUpdate = getRtcTime();
@@ -157,9 +164,8 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
   display.display();
+  display.setTextColor(SSD1306_WHITE);
 }
-
-uint64_t lastButtonPress = -200;
 
 enum Screen {
   SCREEN_MAIN, SCREEN_FEED, SCREEN_PLAY, SCREEN_SLEEP
@@ -169,6 +175,7 @@ Screen currentScreen = SCREEN_MAIN;
 uint64_t lastScreenChange = 0;
 
 void goSleep() {
+  Serial.println("going sleep");
   display.clearDisplay();
   display.display();
 
@@ -196,6 +203,7 @@ void handleButtons() {
     }
 
     lastScreenChange = millis();
+    lastButtonPress = millis();
   }
   else if (digitalRead(BTN_MIDDLE) == LOW) {
     currentScreen = SCREEN_PLAY;
@@ -206,6 +214,7 @@ void handleButtons() {
     }
 
     lastScreenChange = millis();
+    lastButtonPress = millis();
   }
   else if (digitalRead(BTN_RIGHT) == LOW) {
     currentScreen = SCREEN_SLEEP;
@@ -215,6 +224,7 @@ void handleButtons() {
     }
 
     lastScreenChange = millis();
+    lastButtonPress = millis();
   }
 }
 
