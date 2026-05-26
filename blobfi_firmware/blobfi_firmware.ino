@@ -3,7 +3,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
 #include <OneWireNg_CurrentPlatform.h>
-#include <DallasTemperature.h>
+#include <drivers/DSTherm.h>
+#include <utils/Placeholder.h>
 
 
 #define WIDTH 128
@@ -13,22 +14,25 @@
 #define BTN_LEFT 0
 #define BTN_MIDDLE 1
 #define BTN_RIGHT 2
-#define VIBRATION_MOTOR 10
-#define TEMP_SENSOR 3
+#define VIBRATION_MOTOR 18
+#define TEMP_SENSOR 21
 
 #define BTN_LEFT_PIN_BITMASK (1ULL << GPIO_NUM_0)
 #define BTN_MIDDLE_PIN_BITMASK (1ULL << GPIO_NUM_1)
 #define BTN_RIGHT_PIN_BITMASK (1ULL << GPIO_NUM_2)
 
-#define UPDATE_DELAY_IN_S 300
+#define UPDATE_DELAY_IN_S 10
 #define UPDATE_DELAY_IN_uS (UPDATE_DELAY_IN_S * 1000000ULL)
 
 #define SLEEP_AFTER_INACTIVE_FOR_S 30
 
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, OLED_RESET);
 
-/*OneWireNg_CurrentPlatform ow(TEMP_SENSOR, false);
-DallasTemperature sensors((OneWire*)&ow);*/
+OneWireNg_CurrentPlatform ow(TEMP_SENSOR, false);
+DSTherm therm(ow);
+Placeholder<DSTherm::Scratchpad> scratchpad;
+
+OneWireNg::Id sensorId;
 
 const unsigned char PROGMEM NEUTRAL_BLOBFI[] = {
   0b00000000, 0b00000000, 0b00000000, 0b00000000,
@@ -121,16 +125,14 @@ uint64_t lastUpdateBootRelative = 0; // uS
 suseconds_t getRtcTime() {
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  return tv.tv_usec;
+  return tv.tv_sec * 1000000ULL + tv.tv_usec;
 }
 
 float getTempC() {
-  /*sensors.requestTemperatures();
-  delay(110);
-
-  return sensors.getTempCByIndex(0);*/
-
-  return 20;
+  therm.convertTemp(sensorId, DSTherm::MAX_CONV_TIME, false);
+  delay(100);
+  therm.readScratchpad(sensorId, &scratchpad[0]);
+  return scratchpad -> getTemp() / 1000.0f;
 }
 
 uint64_t lastButtonPress = 0;
@@ -140,22 +142,21 @@ void setup() {
   pinMode(BTN_MIDDLE, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
   pinMode(VIBRATION_MOTOR, OUTPUT);
-  Serial.begin(115200);
 
   uint64_t mask = BTN_LEFT_PIN_BITMASK | BTN_MIDDLE_PIN_BITMASK | BTN_RIGHT_PIN_BITMASK;
   esp_deep_sleep_enable_gpio_wakeup(mask, ESP_GPIO_WAKEUP_GPIO_LOW);
 
   esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS);
-  /*sensors.begin();
-  sensors.setResolution(9);*/
+
+  ow.searchReset();
+  ow.search(sensorId);
+  therm.writeScratchpad(sensorId, 0, 0, DSTherm::RES_9_BIT);
 
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
     updatePet();
     esp_deep_sleep_start();
     return;
   }
-
-  Serial.println("setup passed");
 
   if (lastUpdate == -1) {
     lastUpdate = getRtcTime();
@@ -175,7 +176,6 @@ Screen currentScreen = SCREEN_MAIN;
 uint64_t lastScreenChange = 0;
 
 void goSleep() {
-  Serial.println("going sleep");
   display.clearDisplay();
   display.display();
 
@@ -317,7 +317,9 @@ void updatePet() {
   pet.happiness--;
   pet.hunger--;
 
-  if (getTempC() > 40 || getTempC() < 5) {
+  float temp = getTempC();
+
+  if (temp > 40 || temp < 5) {
     pet.happiness--;
   }
 
@@ -326,19 +328,16 @@ void updatePet() {
   if (pet.hunger < 0) {pet.hunger = 0;}
 
   if (pet.energy == 0 || pet.happiness == 0 || pet.hunger == 0) {
-    for (int i = 0; i < 5; i++) {
-      digitalWrite(VIBRATION_MOTOR, HIGH);
-      delay(200);
-      digitalWrite(VIBRATION_MOTOR, LOW);
-      delay(80);
-    }
+    digitalWrite(VIBRATION_MOTOR, HIGH);
+    delay(3000);
+    digitalWrite(VIBRATION_MOTOR, LOW);
   }
 
   lastUpdate = getRtcTime();
 }
 
 void handleAwakeUpdating() {
-  if (getRtcTime() - lastUpdateBootRelative > UPDATE_DELAY_IN_S * 1000) {
+  if (getRtcTime() - lastUpdate > UPDATE_DELAY_IN_uS) {
     updatePet();
   }
 }
@@ -347,5 +346,6 @@ void loop() {
   handleButtons();
   render();
   handleSleeping();
+  handleAwakeUpdating();
   delay(100);
 }
