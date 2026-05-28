@@ -15,7 +15,9 @@ I made this project to have my own custom tamagotchi pet called Blobfi, which is
 
 I used [Tanishq's tamagotchi](https://github.com/TaniWanKenobi/tamagotchi/) as insiration & reference.
 
-To use this project first you need to 3d print the top and bottom parts ([link to the folder with 3d models](https://github.com/Anvarys/blobfi/tree/master/CAD)), then you need to buy all the [parts](https://github.com/Anvarys/blobfi/blob/master/BOM.csv) and the [PCB](https://github.com/Anvarys/blobfi/blob/master/blobfi_gerber.zip) and then assemple it all together as shown on the picture below (also you need to screw the PCB and the top to the bottom enclosure in using 3 M3x8mm screws each):
+## How to build your own Blobfi
+
+To build this project yourself, first you need to 3d print the top and bottom parts ([link to the folder with 3d models](https://github.com/Anvarys/blobfi/tree/master/CAD)), also you preferably should print 4 of the screen supports that will be used to mount hold the screen parallel to the PCB. Then you need to buy all the [parts](https://github.com/Anvarys/blobfi/blob/master/BOM.csv) and the [PCB](https://github.com/Anvarys/blobfi/blob/master/blobfi_gerber.zip) and then assemple it all together as shown on the picture below (also you need to screw the PCB and the top to the bottom enclosure in using 3 M3x8mm screws each):
 ![](https://github.com/Anvarys/blobfi/blob/master/images/assembly.png?raw=true)
 
 And then you need to flash the ESP32 using my [blobfi_firmware](https://github.com/Anvarys/blobfi/tree/master/blobfi_firmware) sketch in Arduino IDE, also you need to install Adafruit SSD1306, OneWireNg, DallasTemperature libraries with their dependencies.
@@ -69,7 +71,7 @@ Also my firmware uses ESP32 deep sleep feature, which allows it to go into a ver
 
 When the device goes into deep sleep it will disable the display, but it will start an internal timer for the next update of Blobfi (5 minutes minus the time from the last update that had already passed) and it will still listen to any button inputs, and if you press any button it will wake up to the normal state.
 
-This allows to reduce ESP32C6 and display's total current from about **50mA** to about **17µA** which is around **2941 times less current**. This allows for the device to actually work for longer than some 10-15 hours, now it can do multiple weeks (theoretically, has not tested that in practice yet).
+This allows to reduce ESP32C6 and display's total current from about **50mA** to about **17µA** which is around **2941 times less current**. This allows for the device to actually work for longer than some 10-15 hours, now it can do multiple weeks (theoretically months, has not tested that in practice yet).
 
 ## BOM
 
