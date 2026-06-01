@@ -49,7 +49,11 @@ And if the temperature of Blobfi goes above 40C or below 5C happiness will decre
 
 Depending on these stats you will have a different image of a blobfish on your main screen, here is an example of a happy Blobfi:
 
+Emulated render:
 ![main_screen](https://github.com/Anvarys/blobfi/blob/master/images/main_screen.png?raw=true)
+
+An actual photo:
+![main_screen](https://github.com/Anvarys/blobfi/blob/master/images/irl-display.jpeg?raw=true)
 
 If any of the stats will go below 0 it will be set to 0 and the vibration motor will shake your Blobfi as it wants to eat/sleep/play.
 
@@ -97,6 +101,13 @@ This allows to reduce ESP32C6 and display's total current from about **50mA** to
 
 The display is out of stock so the price is for buying one from "Other suppliers" on LCSC
 
+## Build photos
+
+For reference the squares are 5x5mm
+
+![sideview](https://github.com/Anvarys/blobfi/blob/master/images/irl-sideview.jpeg?raw=true)
+
+![sideview](https://github.com/Anvarys/blobfi/blob/master/images/irl-topview.jpeg?raw=true)
 
 ## My zine for this project
 

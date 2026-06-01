@@ -12,8 +12,8 @@
 #define OLED_RESET -1
 
 #define BTN_LEFT 0
-#define BTN_MIDDLE 1
-#define BTN_RIGHT 2
+#define BTN_MIDDLE 2
+#define BTN_RIGHT 1
 #define VIBRATION_MOTOR 18
 #define TEMP_SENSOR 21
 
@@ -21,7 +21,7 @@
 #define BTN_MIDDLE_PIN_BITMASK (1ULL << GPIO_NUM_1)
 #define BTN_RIGHT_PIN_BITMASK (1ULL << GPIO_NUM_2)
 
-#define UPDATE_DELAY_IN_S 10
+#define UPDATE_DELAY_IN_S 300
 #define UPDATE_DELAY_IN_uS (UPDATE_DELAY_IN_S * 1000000ULL)
 
 #define SLEEP_AFTER_INACTIVE_FOR_S 30
@@ -129,13 +129,14 @@ suseconds_t getRtcTime() {
 }
 
 float getTempC() {
-  therm.convertTemp(sensorId, DSTherm::MAX_CONV_TIME, false);
-  delay(100);
+  therm.convertTemp(sensorId, 100, false);
   therm.readScratchpad(sensorId, &scratchpad[0]);
   return scratchpad -> getTemp() / 1000.0f;
 }
 
 uint64_t lastButtonPress = 0;
+uint8_t lastTickButtonPressed = 52;
+uint8_t beforeLastTickButtonPressed = 52;
 
 void setup() {
   pinMode(BTN_LEFT, INPUT_PULLUP);
@@ -143,19 +144,31 @@ void setup() {
   pinMode(BTN_RIGHT, INPUT_PULLUP);
   pinMode(VIBRATION_MOTOR, OUTPUT);
 
+  Serial.begin(115200);
+
   uint64_t mask = BTN_LEFT_PIN_BITMASK | BTN_MIDDLE_PIN_BITMASK | BTN_RIGHT_PIN_BITMASK;
   esp_deep_sleep_enable_gpio_wakeup(mask, ESP_GPIO_WAKEUP_GPIO_LOW);
 
   esp_sleep_enable_timer_wakeup(UPDATE_DELAY_IN_uS);
 
   ow.searchReset();
-  ow.search(sensorId);
+  Serial.println(ow.search(sensorId));
   therm.writeScratchpad(sensorId, 0, 0, DSTherm::RES_9_BIT);
 
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
     updatePet();
     esp_deep_sleep_start();
     return;
+  } else if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1) {
+    if (digitalRead(BTN_LEFT) == LOW) {
+      lastTickButtonPressed = 0;
+    }
+    else if (digitalRead(BTN_MIDDLE) == LOW) {
+      lastTickButtonPressed = 1;
+    }
+    else if (digitalRead(BTN_RIGHT) == LOW) {
+      lastTickButtonPressed = 2;
+    }
   }
 
   if (lastUpdate == -1) {
@@ -169,7 +182,7 @@ void setup() {
 }
 
 enum Screen {
-  SCREEN_MAIN, SCREEN_FEED, SCREEN_PLAY, SCREEN_SLEEP
+  SCREEN_MAIN, SCREEN_FEED, SCREEN_PLAY, SCREEN_SLEEP, SCREEN_INFO
 };
 
 Screen currentScreen = SCREEN_MAIN;
@@ -187,45 +200,92 @@ void goSleep() {
   esp_deep_sleep_start();
 }
 
-void handleButtons() {
-  if (currentScreen != SCREEN_MAIN || millis() - lastButtonPress < 150) return;
+uint8_t lastButtonPresses[10] = {0};
 
-  if (digitalRead(BTN_LEFT) == LOW && digitalRead(BTN_RIGHT) == LOW) {
-    goSleep();
+void handleButtons() {
+  if (millis() - lastButtonPress < 100) return;
+
+  if (digitalRead(BTN_RIGHT) == LOW && lastButtonPresses[9] == 0 && lastButtonPresses[8] == 2 && lastButtonPresses[7] == 0 && lastButtonPresses[6] == 1 && lastButtonPresses[5] == 1) {
+    digitalWrite(VIBRATION_MOTOR, HIGH);
+    delay(5000);
+    digitalWrite(VIBRATION_MOTOR, LOW);
   }
+
+  if (digitalRead(BTN_LEFT) == LOW && lastButtonPresses[9] == 2 && lastButtonPresses[8] == 2 && lastButtonPresses[7] == 1 && lastButtonPresses[6] == 0 && lastButtonPresses[5] == 1) {
+    currentScreen = SCREEN_INFO;
+    display.clearDisplay();
+    display.setCursor(0, 26);
+    display.setTextColor(SSD1306_WHITE);
+    display.print("Temp: ");
+    display.print(getTempC());
+    display.print("C");
+    display.display();
+  }
+
+  uint8_t buttonPressed = 52;
 
   if (digitalRead(BTN_LEFT) == LOW) {
-    currentScreen = SCREEN_FEED;
-    pet.hunger += 15;
-    pet.energy += 5;
-    if (pet.hunger > 100) {
-      pet.hunger = 100;
-    }
-
-    lastScreenChange = millis();
-    lastButtonPress = millis();
+    buttonPressed = 0;
   }
   else if (digitalRead(BTN_MIDDLE) == LOW) {
-    currentScreen = SCREEN_PLAY;
-    pet.happiness += 15;
-    pet.energy -= 5;
-    if (pet.happiness > 100) {
-      pet.happiness = 100;
-    }
-
-    lastScreenChange = millis();
-    lastButtonPress = millis();
+    buttonPressed = 1;
   }
   else if (digitalRead(BTN_RIGHT) == LOW) {
-    currentScreen = SCREEN_SLEEP;
-    pet.energy += 15;
-    if (pet.energy > 100) {
-      pet.energy = 100;
+    buttonPressed = 2;
+  }
+
+  if (buttonPressed != 52 && lastTickButtonPressed == 52) {
+    if (currentScreen == SCREEN_MAIN) {
+      if (buttonPressed == 0) {
+        currentScreen = SCREEN_FEED;
+        pet.hunger += 15;
+        pet.energy += 5;
+        if (pet.hunger > 100) {
+          pet.hunger = 100;
+        }
+
+        lastScreenChange = millis();
+        lastButtonPress = millis();
+      }
+      else if (buttonPressed == 1) {
+        currentScreen = SCREEN_PLAY;
+        pet.happiness += 15;
+        pet.energy -= 5;
+        if (pet.happiness > 100) {
+          pet.happiness = 100;
+        }
+
+        lastScreenChange = millis();
+        lastButtonPress = millis();
+      }
+      else if (buttonPressed == 2) {
+        currentScreen = SCREEN_SLEEP;
+        pet.energy += 15;
+        if (pet.energy > 100) {
+          pet.energy = 100;
+        }
+
+        lastScreenChange = millis();
+        lastButtonPress = millis();
+      }
+
+      if (pet.energy < 0) {pet.energy = 0;}
+      if (pet.happiness < 0) {pet.happiness = 0;}
+      if (pet.hunger < 0) {pet.hunger = 0;}
     }
 
-    lastScreenChange = millis();
-    lastButtonPress = millis();
+    else if (currentScreen == SCREEN_INFO) {
+      currentScreen == SCREEN_MAIN;
+    }
+
+    for (int i = 0; i < sizeof(lastButtonPresses)-1; i++) {
+      lastButtonPresses[i] = lastButtonPresses[i+1];
+    }
+
+    lastButtonPresses[sizeof(lastButtonPresses)-1] = buttonPressed;
   }
+
+  lastTickButtonPressed = buttonPressed;
 }
 
 void drawBar(int x, int y, int value) {
@@ -240,7 +300,7 @@ void drawBar(int x, int y, int value) {
 }
 
 void render() {
-  if (currentScreen != SCREEN_MAIN && millis() - lastScreenChange > 3000) {
+  if ((currentScreen == SCREEN_FEED || currentScreen == SCREEN_PLAY || currentScreen == SCREEN_SLEEP) && millis() - lastScreenChange > 3000) {
     currentScreen = SCREEN_MAIN;
   }
 
@@ -294,9 +354,12 @@ void render() {
     display.setCursor(0, 56);
     display.print("[Feed] [Play] [Sleep]");
     break;
+
+  case SCREEN_INFO:
+    break;
   }
 
-  if (currentScreen != SCREEN_MAIN) {
+  if (currentScreen == SCREEN_FEED || currentScreen == SCREEN_PLAY || currentScreen == SCREEN_SLEEP) {
     for (int i = 0; i < (millis()/200)%4; i++) {
       display.print(".");
     }
@@ -327,11 +390,11 @@ void updatePet() {
   if (pet.happiness < 0) {pet.happiness = 0;}
   if (pet.hunger < 0) {pet.hunger = 0;}
 
-  if (pet.energy == 0 || pet.happiness == 0 || pet.hunger == 0) {
+  /*if (pet.energy == 0 || pet.happiness == 0 || pet.hunger == 0) {
     digitalWrite(VIBRATION_MOTOR, HIGH);
     delay(3000);
     digitalWrite(VIBRATION_MOTOR, LOW);
-  }
+  }*/
 
   lastUpdate = getRtcTime();
 }
@@ -347,5 +410,7 @@ void loop() {
   render();
   handleSleeping();
   handleAwakeUpdating();
-  delay(100);
+  delay(10);
+
+  Serial.println(currentScreen);
 }
