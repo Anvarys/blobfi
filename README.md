@@ -109,6 +109,8 @@ For reference the squares are 5x5mm
 
 ![sideview](https://github.com/Anvarys/blobfi/blob/master/images/irl-topview.jpeg?raw=true)
 
+[_demo_](https://www.youtube.com/shorts/axdSh3g87GE)
+
 ## My zine for this project
 
 ![Zine](https://github.com/Anvarys/blobfi/blob/master/images/zine.png?raw=true)
